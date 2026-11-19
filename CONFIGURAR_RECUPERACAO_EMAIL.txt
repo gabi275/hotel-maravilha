@@ -1,0 +1,30 @@
+HOTEL MARAVILHA - RECUPERACAO REAL DE SENHA E USUARIO
+
+Este projeto ja inclui os links no login:
+- /recuperar-senha/ -> envia link de redefinicao por email
+- /recuperar-usuario/ -> envia o nome de usuario por email
+
+O envio real exige um provedor SMTP. Esta versao usa Brevo como opcao,
+sem senha de app do Google. O Brevo pode exigir verificacao do remetente,
+ativacao de SMTP e estar sujeito a limites/planos.
+
+1. Crie uma conta no https://www.brevo.com/ (se desejar usar esse servico).
+2. No painel, verifique um email remetente e crie uma chave SMTP.
+   Use o LOGIN SMTP informado pelo painel e a CHAVE SMTP, nao sua senha de login.
+3. Copie os arquivos do ZIP para seu projeto, mas NAO substitua nem apague
+   seu db.sqlite3. Este ZIP nao contem banco de dados.
+4. Abra PowerShell NA PASTA onde esta manage.py e rode:
+   powershell -NoExit -ExecutionPolicy Bypass -File .\iniciar_com_email.ps1
+5. Preencha login SMTP, chave SMTP e remetente verificado.
+6. Abra http://127.0.0.1:8000/login/ e teste as duas opcoes.
+7. Cada conta de usuario precisa ter um email valido salvo no Django.
+
+IMPORTANTE: o servidor precisa permanecer aberto enquanto os emails sao enviados.
+O link de redefinicao usa o endereco do site de onde o pedido foi feito.
+Para acesso de outro dispositivo, localhost/127.0.0.1 nao funciona; e necessario
+um endereco publico HTTPS no deploy.
+
+O backend console permanece como padrao caso o script nao seja usado.
+Nesse modo, emails aparecem apenas no terminal e NAO sao enviados.
+
+Nunca compartilhe chaves SMTP, nao as salve no codigo nem as envie em prints.

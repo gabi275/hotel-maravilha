@@ -1,0 +1,10 @@
+runtime: python312
+entrypoint: gunicorn -b :$PORT pw2026.wsgi:application --workers 1 --threads 6
+handlers:
+- url: /static
+  static_dir: static_gcloud
+- url: /.*
+  script: auto
+# Configure DATABASE_URL, DJANGO_SECRET_KEY, DJANGO_DEBUG=false,
+# DJANGO_ALLOWED_HOSTS, DJANGO_CSRF_TRUSTED_ORIGINS e SMTP no ambiente.
+# Nunca coloque senhas neste arquivo versionado.

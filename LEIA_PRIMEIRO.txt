@@ -1,0 +1,18 @@
+HOTEL MARAVILHA — 3º TRIMESTRE
+1. FAÇA BACKUP do banco antigo. Este ZIP NÃO contém db.sqlite3.
+2. Extraia e use o projeto. Se quiser manter seus dados locais, COPIE seu db.sqlite3 antigo para esta pasta (junto de manage.py), antes de migrar.
+3. pip install -r requirements.txt
+4. python manage.py migrate
+5. python manage.py check
+6. python manage.py test website
+7. python manage.py runserver
+
+CADASTROS ANTIGOS: hóspedes sem dono só são associados automaticamente se uma reserva existente identificar UM único dono. Os demais ficam sem dono e não aparecem para usuários comuns. Associe manualmente no Django admin após confirmar quem os cadastrou. Não atribua tudo a 'teste'.
+
+PERMISSÕES: 'Gerente' ou is_staff pode cadastrar/alterar/excluir tipos, status e quartos. Todos logados podem consultar. Hóspedes, reservas e hospedagens são privados.
+
+E-MAIL: no modo local, mensagens de recuperação aparecem no terminal do servidor. Para envio real configure DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend e EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, DEFAULT_FROM_EMAIL.
+
+GOOGLE APP ENGINE: app.yaml está preparado, mas DEPLOY NÃO FOI REALIZADO. Configure variáveis de ambiente/secret manager e Postgres antes de publicar; nunca use SQLite efêmero em produção. Rotacione as credenciais do Neon que estavam no ZIP original.
+
+PLUGINS: máscara jQuery, DataTables, Bootbox dependem de CDN (conexão à internet). Teste no navegador.
