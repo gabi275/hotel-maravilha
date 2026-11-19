@@ -6,11 +6,3 @@ db.sqlite3
 db.sqlite3-*
 static_gcloud/
 .venv/
-db.sqlite3
-*.sqlite3
-.env
-.env.*
-!.env.example
-__pycache__/
-*.pyc
-static_gcloud/

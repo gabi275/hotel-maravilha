@@ -1,0 +1,20 @@
+ASSISTENTE GEMINI - HOTEL MARAVILHA
+
+A chave anteriormente compartilhada deve ser revogada no Google AI Studio.
+Crie outra chave e NAO a envie por mensagem nem a coloque no GitHub.
+
+No PowerShell do VS Code, na pasta com manage.py:
+$env:GEMINI_API_KEY = Read-Host "Cole sua NOVA chave do Gemini"
+python manage.py migrate
+python manage.py runserver
+
+Abra http://127.0.0.1:8000/assistente/ (sem asteriscos).
+A tela mostra "Assistente com IA" quando o Gemini responder.
+Se a API estiver indisponivel, a tela mostra "Assistente local".
+A variavel de ambiente so dura ate o terminal ser fechado.
+
+Teste automatico sem expor a chave:
+python manage.py test ia
+
+Para App Engine, configure GEMINI_API_KEY como segredo do ambiente;
+nao salve a chave no app.yaml, .env versionado ou arquivos do repositorio.

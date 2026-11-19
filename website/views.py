@@ -44,16 +44,37 @@ class Contato(TemplateView):
     template_name = "website/contato.html"
 
 
-class GestorMixin(UserPassesTestMixin):
+class GestorMixin:
+    """Autorização aplicada por ConvidadoSomenteLeituraMixin."""
     """Somente staff ou membros do grupo Gerente gerenciam cadastros gerais."""
     def test_func(self):
         user = self.request.user
         return user.is_authenticated and (user.is_staff or user.groups.filter(name='Gerente').exists())
 
+class ConvidadoSomenteLeituraMixin(UserPassesTestMixin):
+    """Impede operações de escrita por contas convidadas, inclusive requisições POST."""
+    def test_func(self):
+        user = self.request.user
+        return (user.is_authenticated and user.username.lower() != 'convidado'
+                and not user.groups.filter(name='Convidado').exists()
+                and (not isinstance(self, GestorMixin) or
+                     user.is_staff or user.groups.filter(name='Gerente').exists()))
+
+
+class PermissaoTemplateMixin:
+    """Oculta ações de escrita para convidados; a view também bloqueia no servidor."""
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['pode_editar'] = (user.is_authenticated and user.username.lower() != 'convidado'
+            and not user.groups.filter(name='Convidado').exists())
+        return context
+
+
 #################### Views para TipoQuarto ####################
 
 
-class TipoQuartoCreate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, CreateView):
+class TipoQuartoCreate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, SuccessMessageMixin, CreateView):
     success_message = "Registro salvo com sucesso."
     model = TipoQuarto
     fields = ["nome"]
@@ -65,7 +86,7 @@ class TipoQuartoCreate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, Cre
     }
 
 
-class TipoQuartoUpdate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, UpdateView):
+class TipoQuartoUpdate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, SuccessMessageMixin, UpdateView):
     success_message = "Registro salvo com sucesso."
     model = TipoQuarto
     fields = ["nome"]
@@ -77,7 +98,7 @@ class TipoQuartoUpdate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, Upd
     }
 
 
-class TipoQuartoDelete(LoginRequiredMixin, GestorMixin, DeleteView):
+class TipoQuartoDelete(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, DeleteView):
     model = TipoQuarto
     template_name = "website/form.html"
     success_url = reverse_lazy("tipoquarto_list")
@@ -92,7 +113,7 @@ class TipoQuartoDelete(LoginRequiredMixin, GestorMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, "Registro excluído com sucesso.")
         return response
-class TipoQuartoList(LoginRequiredMixin, ListView):
+class TipoQuartoList(LoginRequiredMixin, PermissaoTemplateMixin, ListView):
     model = TipoQuarto
     template_name = "website/listas/tipoquartos.html"
 
@@ -105,7 +126,7 @@ class TipoQuartoDetail(LoginRequiredMixin, DetailView):
 #################### Views para StatusReserva ####################
 
 
-class StatusReservaCreate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, CreateView):
+class StatusReservaCreate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, SuccessMessageMixin, CreateView):
     success_message = "Registro salvo com sucesso."
     model = StatusReserva
     fields = ["nome"]
@@ -117,7 +138,7 @@ class StatusReservaCreate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, 
     }
 
 
-class StatusReservaUpdate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, UpdateView):
+class StatusReservaUpdate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, SuccessMessageMixin, UpdateView):
     success_message = "Registro salvo com sucesso."
     model = StatusReserva
     fields = ["nome"]
@@ -129,7 +150,7 @@ class StatusReservaUpdate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, 
     }
 
 
-class StatusReservaDelete(LoginRequiredMixin, GestorMixin, DeleteView):
+class StatusReservaDelete(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, DeleteView):
     model = StatusReserva
     template_name = "website/form.html"
     success_url = reverse_lazy("statusreserva_list")
@@ -144,7 +165,7 @@ class StatusReservaDelete(LoginRequiredMixin, GestorMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, "Registro excluído com sucesso.")
         return response
-class StatusReservaList(LoginRequiredMixin, ListView):
+class StatusReservaList(LoginRequiredMixin, PermissaoTemplateMixin, ListView):
     model = StatusReserva
     template_name = "website/listas/statusreservas.html"
 
@@ -157,7 +178,7 @@ class StatusReservaDetail(LoginRequiredMixin, DetailView):
 #################### Views para Quarto ####################
 
 
-class QuartoCreate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, CreateView):
+class QuartoCreate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, SuccessMessageMixin, CreateView):
     success_message = "Registro salvo com sucesso."
     model = Quarto
     fields = ["numero", "tipo_quarto", "capacidade", "valor_diaria", "disponivel"]
@@ -169,7 +190,7 @@ class QuartoCreate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, CreateV
     }
 
 
-class QuartoUpdate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, UpdateView):
+class QuartoUpdate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, SuccessMessageMixin, UpdateView):
     success_message = "Registro salvo com sucesso."
     model = Quarto
     fields = ["numero", "tipo_quarto", "capacidade", "valor_diaria", "disponivel"]
@@ -181,7 +202,7 @@ class QuartoUpdate(LoginRequiredMixin, GestorMixin, SuccessMessageMixin, UpdateV
     }
 
 
-class QuartoDelete(LoginRequiredMixin, GestorMixin, DeleteView):
+class QuartoDelete(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, GestorMixin, DeleteView):
     model = Quarto
     template_name = "website/form.html"
     success_url = reverse_lazy("quarto_list")
@@ -196,7 +217,7 @@ class QuartoDelete(LoginRequiredMixin, GestorMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, "Registro excluído com sucesso.")
         return response
-class QuartoList(LoginRequiredMixin, ListView):
+class QuartoList(LoginRequiredMixin, PermissaoTemplateMixin, ListView):
     model = Quarto
     template_name = "website/listas/quartos.html"
 
@@ -208,7 +229,7 @@ class QuartoDetail(LoginRequiredMixin, DetailView):
 #################### Views para Hospede ####################
 
 
-class HospedeCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class HospedeCreate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, SuccessMessageMixin, CreateView):
     success_message = "Registro salvo com sucesso."
     model = Hospede
     fields = ["nome", "cpf", "telefone", "email"]
@@ -224,7 +245,7 @@ class HospedeCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def form_valid(self, form):
         form.instance.cadastrado_por = self.request.user
         return super().form_valid(form)
-class HospedeUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class HospedeUpdate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, SuccessMessageMixin, UpdateView):
     success_message = "Registro salvo com sucesso."
     model = Hospede
     fields = ["nome", "cpf", "telefone", "email"]
@@ -239,7 +260,7 @@ class HospedeUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_queryset(self):
         return super().get_queryset().filter(cadastrado_por=self.request.user)
-class HospedeDelete(LoginRequiredMixin, DeleteView):
+class HospedeDelete(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, DeleteView):
     model = Hospede
     template_name = "website/form.html"
     success_url = reverse_lazy("hospede_list")
@@ -257,7 +278,7 @@ class HospedeDelete(LoginRequiredMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, "Registro excluído com sucesso.")
         return response
-class HospedeList(LoginRequiredMixin, ListView):
+class HospedeList(LoginRequiredMixin, PermissaoTemplateMixin, ListView):
     paginate_by = 10
     model = Hospede
     template_name = "website/listas/hospedes.html"
@@ -270,6 +291,9 @@ class HospedeDetail(LoginRequiredMixin, DetailView):
     model = Hospede
     template_name = "website/ver/hospede.html"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(cadastrado_por=self.request.user)
+
 
 #################### Views para Reserva ####################
 
@@ -277,7 +301,7 @@ class HospedeDetail(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return super().get_queryset().filter(cadastrado_por=self.request.user)
-class ReservaCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class ReservaCreate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, SuccessMessageMixin, CreateView):
     success_message = "Registro salvo com sucesso."
     model = Reserva
     form_class = ReservaForm
@@ -298,7 +322,7 @@ class ReservaCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
-class ReservaUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class ReservaUpdate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, SuccessMessageMixin, UpdateView):
     success_message = "Registro salvo com sucesso."
     model = Reserva
     form_class = ReservaForm
@@ -318,7 +342,7 @@ class ReservaUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
-class ReservaDelete(LoginRequiredMixin, DeleteView):
+class ReservaDelete(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, DeleteView):
     model = Reserva
     template_name = "website/form.html"
     success_url = reverse_lazy("reserva_list")
@@ -336,7 +360,7 @@ class ReservaDelete(LoginRequiredMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, "Registro excluído com sucesso.")
         return response
-class ReservaList(LoginRequiredMixin, FilterView):
+class ReservaList(LoginRequiredMixin, PermissaoTemplateMixin, FilterView):
     filterset_class = ReservaFilter
     paginate_by = 10
     model = Reserva
@@ -357,7 +381,7 @@ class ReservaDetail(LoginRequiredMixin, DetailView):
 #################### Views para Hospedagem ####################
 
 
-class HospedagemCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class HospedagemCreate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, SuccessMessageMixin, CreateView):
     success_message = "Registro salvo com sucesso."
     model = Hospedagem
     form_class = HospedagemForm
@@ -378,7 +402,7 @@ class HospedagemCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
-class HospedagemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class HospedagemUpdate(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, SuccessMessageMixin, UpdateView):
     success_message = "Registro salvo com sucesso."
     model = Hospedagem
     form_class = HospedagemForm
@@ -398,7 +422,7 @@ class HospedagemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
-class HospedagemDelete(LoginRequiredMixin, DeleteView):
+class HospedagemDelete(LoginRequiredMixin, ConvidadoSomenteLeituraMixin, DeleteView):
     model = Hospedagem
     template_name = "website/form.html"
     success_url = reverse_lazy("hospedagem_list")
@@ -416,7 +440,7 @@ class HospedagemDelete(LoginRequiredMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, "Registro excluído com sucesso.")
         return response
-class HospedagemList(LoginRequiredMixin, ListView):
+class HospedagemList(LoginRequiredMixin, PermissaoTemplateMixin, ListView):
     paginate_by = 10
     model = Hospedagem
     template_name = "website/listas/hospedagens.html"

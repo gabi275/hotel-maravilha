@@ -1,12 +1,12 @@
 {% extends "website/modelo.html" %}
+
+{% block titulo %}Listagem | Hotel Maravilha{% endblock %}
+
 {% load paginacao %}
-
-{% block titulo %}Listagem de Hóspedes{% endblock %}
-
 {% block conteudo %}
 <div class="card border-0 shadow-sm">
     <div class="card-body">
-        <h1 class="h4 fw-bold mb-3">Listagem de Hóspedes</h1>
+        <h1 class="h4 fw-bold mb-3">Listagem</h1>
 
         <table class="table table-hover">
             <thead>
@@ -15,23 +15,20 @@
                     <th class="text-end">Ações</th>
                 </tr>
             </thead>
-
             <tbody>
                 {% for object in object_list %}
                 <tr>
                     <td>{{ object }}</td>
                     <td class="text-end">
-                        <a href="../ver/{{ object.pk }}/" class="btn btn-outline-info btn-sm">
-                            Detalhes
-                        </a>
-
-                        <a href="../editar/{{ object.pk }}/" class="btn btn-outline-primary btn-sm">
-                            Editar
-                        </a>
-
-                        <a href="../excluir/{{ object.pk }}/" class="btn btn-outline-danger btn-sm">
-                            Excluir
-                        </a>
+                        <a href="../ver/{{ object.pk }}/" class="btn btn-outline-info btn-sm">Detalhes</a>
+                        {% if pode_editar %}<a href="../editar/{{ object.pk }}/" class="btn btn-outline-primary btn-sm">Editar</a>
+                        <a href="../excluir/{{ object.pk }}/" class="btn btn-outline-danger btn-sm">Excluir</a>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-center text-muted py-4">
+                        Nenhum registro encontrado.
                     </td>
                 </tr>
                 {% endfor %}
@@ -39,35 +36,8 @@
         </table>
     </div>
 </div>
-
-{% if is_paginated %}
-<nav aria-label="Paginação de hóspedes">
-    <ul class="pagination justify-content-center">
-
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="{% pagina_com_filtros page_obj.previous_page_number %}">
-                Anterior
-            </a>
-        </li>
-        {% endif %}
-
-        <li class="page-item disabled">
-            <span class="page-link">
-                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-            </span>
-        </li>
-
-        {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="{% pagina_com_filtros page_obj.next_page_number %}">
-                Próxima
-            </a>
-        </li>
-        {% endif %}
-
-    </ul>
-</nav>
-{% endif %}
-
-{% endblock %}
+{% if is_paginated %}<nav><ul class="pagination justify-content-center">
+{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="{% pagina_com_filtros page_obj.previous_page_number %}">Anterior</a></li>{% endif %}
+<li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="{% pagina_com_filtros page_obj.next_page_number %}">Próxima</a></li>{% endif %}
+</ul></nav>{% endif %}{% endblock %}

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "website.apps.WebsiteConfig",
+    "ia.apps.IaConfig",
 
     "django_filters",
     "crispy_forms",
